@@ -1,1 +1,1 @@
-from wavlm.WavLM import WavLM, WavLMConfig
+from .WavLM import WavLM, WavLMConfig
