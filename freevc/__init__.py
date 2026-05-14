@@ -5,10 +5,9 @@ import torch
 import numpy as np
 import librosa
 from huggingface_hub import hf_hub_download
-from pathlib import Path
+from transformers import WavLMModel
 
 from .models import SynthesizerTrn
-from .wavlm import WavLM, WavLMConfig
 from .speaker_encoder.voice_encoder import SpeakerEncoder
 from . import utils
 
@@ -22,22 +21,19 @@ class FreeVC:
         Args:
             model_name: "freevc" or "freevc-s"
             device: "cuda" or "cpu"
-            checkpoint_dir: local path containing logs/, checkpoints/, wavlm/, speaker_encoder/
-                           If None, downloads from HuggingFace Hub (DinoMan/FreeVC).
+            checkpoint_dir: local path with configs/, checkpoints/, speaker_encoder/
         """
         self.device = device
         self.sr = 16000
 
         if checkpoint_dir:
-            config_path = os.path.join(checkpoint_dir, f"logs/{model_name}.json")
+            config_path = os.path.join(checkpoint_dir, f"configs/{model_name}.json")
             ckpt_path = os.path.join(checkpoint_dir, f"checkpoints/{model_name}.pth")
-            wavlm_path = os.path.join(checkpoint_dir, "wavlm/WavLM-Large.pt")
             spk_path = os.path.join(checkpoint_dir, "speaker_encoder/ckpt/pretrained_bak_5805000.pt")
         else:
             _kw = {"repo_type": "space"}
-            config_path = hf_hub_download("OlaWod/FreeVC", f"logs/{model_name}.json", **_kw)
+            config_path = hf_hub_download("OlaWod/FreeVC", f"configs/{model_name}.json", **_kw)
             ckpt_path = hf_hub_download("OlaWod/FreeVC", f"checkpoints/{model_name}.pth", **_kw)
-            wavlm_path = hf_hub_download("OlaWod/FreeVC", "wavlm/WavLM-Large.pt", **_kw)
             spk_path = hf_hub_download("OlaWod/FreeVC", "speaker_encoder/ckpt/pretrained_bak_5805000.pt", **_kw)
 
         # Load config
@@ -52,15 +48,18 @@ class FreeVC:
         self.net_g.eval()
         utils.load_checkpoint(ckpt_path, self.net_g, None, True)
 
-        # Load WavLM
-        checkpoint = torch.load(wavlm_path, map_location=device)
-        cfg = WavLMConfig(checkpoint['cfg'])
-        self.cmodel = WavLM(cfg).to(device)
-        self.cmodel.load_state_dict(checkpoint['model'])
+        # Load WavLM from transformers
+        self.cmodel = WavLMModel.from_pretrained("microsoft/wavlm-large").to(device)
         self.cmodel.eval()
 
         # Load speaker encoder
         self.smodel = SpeakerEncoder(spk_path, device=device)
+
+    def _get_content(self, wav_tensor):
+        """Extract content features using WavLM."""
+        with torch.no_grad():
+            c = self.cmodel(wav_tensor).last_hidden_state
+        return c.transpose(1, 2)
 
     def convert(self, source_wav, target_wav):
         """Convert source speech to target speaker's voice.
@@ -75,8 +74,7 @@ class FreeVC:
         with torch.no_grad():
             # Extract content from source
             wav_src = torch.from_numpy(source_wav).float().unsqueeze(0).to(self.device)
-            c = self.cmodel.extract_features(wav_src)[0]
-            c = c.transpose(1, 2)
+            c = self._get_content(wav_src)
 
             # Extract speaker embedding from target
             wav_tgt = target_wav.copy()

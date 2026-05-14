@@ -12,7 +12,6 @@ import torchvision
 from torch.nn import functional as F
 from .commons import sequence_mask
 from . import hifigan
-from .wavlm import WavLM, WavLMConfig
 
 MATPLOTLIB_FLAG = False
 
