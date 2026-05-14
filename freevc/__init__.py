@@ -80,7 +80,7 @@ class FreeVC:
             wav_tgt = target_wav.copy()
             wav_tgt, _ = librosa.effects.trim(wav_tgt, top_db=20)
             g_tgt = self.smodel.embed_utterance(wav_tgt)
-            g_tgt = torch.from_numpy(g_tgt).unsqueeze(0).unsqueeze(-1).to(self.device)
+            g_tgt = torch.from_numpy(g_tgt).unsqueeze(0).to(self.device)
 
             # Generate
             audio = self.net_g.infer(c, g=g_tgt)
