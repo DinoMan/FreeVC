@@ -16,21 +16,28 @@ from . import utils
 class FreeVC:
     """FreeVC inference wrapper."""
 
-    def __init__(self, model_name="freevc", device="cuda"):
+    def __init__(self, model_name="freevc", device="cuda", checkpoint_dir=None):
         """Load FreeVC model.
 
         Args:
             model_name: "freevc" or "freevc-s"
             device: "cuda" or "cpu"
+            checkpoint_dir: local path containing logs/, checkpoints/, wavlm/, speaker_encoder/
+                           If None, downloads from HuggingFace Hub (DinoMan/FreeVC).
         """
         self.device = device
         self.sr = 16000
 
-        # Download checkpoints
-        config_path = hf_hub_download("OlaWod/FreeVC", f"logs/{model_name}.json")
-        ckpt_path = hf_hub_download("OlaWod/FreeVC", f"checkpoints/{model_name}.pth")
-        wavlm_path = hf_hub_download("OlaWod/FreeVC", "wavlm/WavLM-Large.pt")
-        spk_path = hf_hub_download("OlaWod/FreeVC", "speaker_encoder/ckpt/pretrained_bak_5805000.pt")
+        if checkpoint_dir:
+            config_path = os.path.join(checkpoint_dir, f"logs/{model_name}.json")
+            ckpt_path = os.path.join(checkpoint_dir, f"checkpoints/{model_name}.pth")
+            wavlm_path = os.path.join(checkpoint_dir, "wavlm/WavLM-Large.pt")
+            spk_path = os.path.join(checkpoint_dir, "speaker_encoder/ckpt/pretrained_bak_5805000.pt")
+        else:
+            config_path = hf_hub_download("DinoMan/FreeVC", f"logs/{model_name}.json")
+            ckpt_path = hf_hub_download("DinoMan/FreeVC", f"checkpoints/{model_name}.pth")
+            wavlm_path = hf_hub_download("DinoMan/FreeVC", "wavlm/WavLM-Large.pt")
+            spk_path = hf_hub_download("DinoMan/FreeVC", "speaker_encoder/ckpt/pretrained_bak_5805000.pt")
 
         # Load config
         self.hps = utils.get_hparams_from_file(config_path)
