@@ -1,4 +1,4 @@
-from speaker_encoder import inference as encoder
+from . import inference as encoder
 from multiprocessing.pool import Pool
 from functools import partial
 from pathlib import Path

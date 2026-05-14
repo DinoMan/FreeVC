@@ -1,4 +1,4 @@
-from speaker_encoder.data_objects.speaker_verification_dataset import SpeakerVerificationDataset
+from .data_objects.speaker_verification_dataset import SpeakerVerificationDataset
 from datetime import datetime
 from time import perf_counter as timer
 import matplotlib.pyplot as plt
@@ -65,8 +65,8 @@ class Visualizations:
     def log_params(self):
         if self.disabled:
             return 
-        from speaker_encoder import params_data
-        from speaker_encoder import params_model
+        from . import params_data
+        from . import params_model
         param_string = "<b>Model parameters</b>:<br>"
         for param_name in (p for p in dir(params_model) if not p.startswith("__")):
             value = getattr(params_model, param_name)

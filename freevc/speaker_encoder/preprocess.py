@@ -1,8 +1,8 @@
 from multiprocess.pool import ThreadPool
-from speaker_encoder.params_data import *
-from speaker_encoder.config import librispeech_datasets, anglophone_nationalites
+from .params_data import *
+from .config import librispeech_datasets, anglophone_nationalites
 from datetime import datetime
-from speaker_encoder import audio
+from . import audio
 from pathlib import Path
 from tqdm import tqdm
 import numpy as np
@@ -22,7 +22,7 @@ class DatasetLog:
         self._log_params()
         
     def _log_params(self):
-        from speaker_encoder import params_data
+        from . import params_data
         self.write_line("Parameter values:")
         for param_name in (p for p in dir(params_data) if not p.startswith("__")):
             value = getattr(params_data, param_name)
