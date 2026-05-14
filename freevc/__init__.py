@@ -34,10 +34,11 @@ class FreeVC:
             wavlm_path = os.path.join(checkpoint_dir, "wavlm/WavLM-Large.pt")
             spk_path = os.path.join(checkpoint_dir, "speaker_encoder/ckpt/pretrained_bak_5805000.pt")
         else:
-            config_path = hf_hub_download("DinoMan/FreeVC", f"logs/{model_name}.json")
-            ckpt_path = hf_hub_download("DinoMan/FreeVC", f"checkpoints/{model_name}.pth")
-            wavlm_path = hf_hub_download("DinoMan/FreeVC", "wavlm/WavLM-Large.pt")
-            spk_path = hf_hub_download("DinoMan/FreeVC", "speaker_encoder/ckpt/pretrained_bak_5805000.pt")
+            _kw = {"repo_type": "space"}
+            config_path = hf_hub_download("OlaWod/FreeVC", f"logs/{model_name}.json", **_kw)
+            ckpt_path = hf_hub_download("OlaWod/FreeVC", f"checkpoints/{model_name}.pth", **_kw)
+            wavlm_path = hf_hub_download("OlaWod/FreeVC", "wavlm/WavLM-Large.pt", **_kw)
+            spk_path = hf_hub_download("OlaWod/FreeVC", "speaker_encoder/ckpt/pretrained_bak_5805000.pt", **_kw)
 
         # Load config
         self.hps = utils.get_hparams_from_file(config_path)
